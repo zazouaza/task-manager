@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Loader2, Plus, Tag, Clock, CalendarDays, AlarmClock } from 'lucide-react';
 import { parseTaskFromInput } from '../services/geminiService';
 import { useTasks } from '../context/TaskContext';
-import { AIParseResult, Priority } from '../types';
+import { AIParseResult } from '../types';
 
 const AIChatView: React.FC = () => {
-  const { addTask } = useTasks();
+  // FIX: Use createTask instead of addTask
+  const { createTask } = useTasks();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AIParseResult | null>(null);
@@ -34,24 +35,28 @@ const AIChatView: React.FC = () => {
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (result) {
-      addTask({
-        title: result.title,
-        description: result.description,
-        priority: result.priority === 'auto' ? 'medium' : result.priority,
-        status: 'todo',
-        category: result.category === 'auto' ? 'General' : result.category,
-        due_date: result.datetime,
-        tags: result.tags,
-        reminder: result.reminder,
-        duration_minutes: result.duration_minutes,
-        subtasks: result.subtasks,
-        ai_generated: true
-      });
-      // Reset
-      setResult(null);
-      setInput('');
+      try {
+        await createTask({
+          title: result.title,
+          description: result.description,
+          priority: result.priority === 'auto' ? 'medium' : result.priority,
+          status: 'todo',
+          category: result.category === 'auto' ? 'General' : result.category,
+          due_date: result.datetime,
+          tags: result.tags,
+          reminder: result.reminder,
+          duration_minutes: result.duration_minutes,
+          subtasks: result.subtasks,
+          ai_generated: true
+        });
+        // Reset
+        setResult(null);
+        setInput('');
+      } catch (e) {
+        console.error("Failed to create task via AI", e);
+      }
     }
   };
 

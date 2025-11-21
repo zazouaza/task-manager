@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
 import { supabase } from '../lib/supabase';
@@ -8,7 +9,8 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   login: (email: string, pass: string) => Promise<void>;
-  register: (email: string, pass: string, name: string) => Promise<void>;
+  loginWithMagicLink: (email: string) => Promise<void>;
+  register: (email: string, pass: string, name: string) => Promise<{ session: Session | null, user: any | null }>;
   logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => Promise<void>;
 }
@@ -21,30 +23,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email!,
-          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-          avatarUrl: session.user.user_metadata?.avatar_url
-        });
+    // 1. Check active session on mount
+    const initSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        if (session?.user) {
+          mapSessionToUser(session);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    initSession();
 
     // 2. Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email!,
-          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-          avatarUrl: session.user.user_metadata?.avatar_url
-        });
+        mapSessionToUser(session);
       } else {
         setUser(null);
       }
@@ -54,6 +54,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
+  const mapSessionToUser = (session: Session) => {
+    setUser({
+      id: session.user.id,
+      email: session.user.email!,
+      name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+      avatarUrl: session.user.user_metadata?.avatar_url
+    });
+  };
+
   const login = async (email: string, pass: string) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -62,8 +71,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) throw error;
   };
 
+  const loginWithMagicLink = async (email: string) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.origin,
+      }
+    });
+    if (error) throw error;
+  };
+
   const register = async (email: string, pass: string, name: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password: pass,
       options: {
@@ -74,6 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       },
     });
     if (error) throw error;
+    return data;
   };
 
   const logout = async () => {
@@ -100,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, session, loading, login, loginWithMagicLink, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

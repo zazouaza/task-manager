@@ -1,12 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { TaskProvider } from './context/TaskContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ViewState } from './types';
-import { LayoutGrid, ListTodo, Sparkles, User, Sun, Moon, LogOut, Loader2, Command } from 'lucide-react';
+import { LayoutGrid, ListTodo, Sparkles, User, Sun, Moon, LogOut, Loader2, Command, Calendar } from 'lucide-react';
 import DashboardView from './views/DashboardView';
 import TaskListView from './views/TaskListView';
 import AIChatView from './views/AIChatView';
 import ProfileView from './views/ProfileView';
+import CalendarView from './views/CalendarView';
 import AuthView from './views/AuthView';
 
 // Helper for theme
@@ -47,6 +49,7 @@ const MainLayout: React.FC = () => {
   const menuItems = [
     { id: ViewState.DASHBOARD, label: 'Dashboard', icon: <LayoutGrid className="w-5 h-5" /> },
     { id: ViewState.TASKS, label: 'My Tasks', icon: <ListTodo className="w-5 h-5" /> },
+    { id: ViewState.CALENDAR, label: 'Calendar', icon: <Calendar className="w-5 h-5" /> },
     { id: ViewState.AI_CHAT, label: 'AI Assistant', icon: <Sparkles className="w-5 h-5" />, special: true },
     { id: ViewState.PROFILE, label: 'Profile', icon: <User className="w-5 h-5" /> },
   ];
@@ -55,6 +58,7 @@ const MainLayout: React.FC = () => {
     switch (currentView) {
       case ViewState.DASHBOARD: return <DashboardView />;
       case ViewState.TASKS: return <TaskListView />;
+      case ViewState.CALENDAR: return <CalendarView />;
       case ViewState.AI_CHAT: return <AIChatView />;
       case ViewState.PROFILE: return <ProfileView />;
       default: return <DashboardView />;
