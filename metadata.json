@@ -1,0 +1,5 @@
+{
+  "name": "TaskFlow AI",
+  "description": "A next-generation, mobile-first task manager powered by Gemini 2.5 Flash for intelligent task parsing and management.",
+  "requestFramePermissions": []
+}
