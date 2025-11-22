@@ -1,5 +1,3 @@
-
-
 export type Priority = 'low' | 'medium' | 'high' | 'auto';
 export type Status = 'todo' | 'in-progress' | 'done';
 
@@ -36,7 +34,6 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  avatarUrl?: string;
 }
 
 export type SortOption = 'latest' | 'oldest' | 'priority_desc' | 'priority_asc' | 'due_soon' | 'due_late' | 'alphabetical';

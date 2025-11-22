@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
 import { supabase } from '../lib/supabase';
@@ -58,8 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser({
       id: session.user.id,
       email: session.user.email!,
-      name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-      avatarUrl: session.user.user_metadata?.avatar_url
+      name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User'
     });
   };
 
@@ -87,8 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       password: pass,
       options: {
         data: {
-          full_name: name,
-          avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`
+          full_name: name
         },
       },
     });
@@ -108,8 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const { error } = await supabase.auth.updateUser({
       data: {
-        full_name: updates.name,
-        avatar_url: updates.avatarUrl
+        full_name: updates.name
       }
     });
 
